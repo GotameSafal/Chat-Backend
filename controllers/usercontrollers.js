@@ -15,12 +15,6 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
   const result = await user.comparePassword(password);
   if (!result) return next(new ErrorHandler(400, "Invalid credentails"));
   const token = await user.getJwtWebToken();
-  // .cookie("Wechat", token, {
-  //   expires: new Date(
-  //     Date.now() + process.env.COOKIE_EXPIRY * 24 * 60 * 60 * 1000
-  //   ),
-  //   httpOnly: true,
-  // })
   res.status(200).send({
     success: true,
     message: `successfully logged In`,
@@ -29,36 +23,40 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
 });
 
 export const registerUser = catchAsyncError(async (req, res, next) => {
-  const file = req.file;
-  const { username, email, password, confirmPassword } = req.body;
-  if (!username || !email || !password || !confirmPassword)
-    return next(new ErrorHandler(400, "please enter in valid field"));
-  let user = await User.findOne({ email });
-  if (user)
-    return next(
-      new ErrorHandler(400, `user already exist with email ${email}`)
-    );
-  if (password !== confirmPassword)
-    return next(
-      new ErrorHandler(400, `password and confirm password doesn't match`)
-    );
-  const uri = getDataUri(file);
-  const response = await cloudinary.uploader.upload(uri.content);
-  const image = {
-    url: response.url,
-    public_id: response.public_id,
-  };
-  user = await User.create({
-    username,
-    email,
-    password,
-    image,
-  });
-  res.status(201).json({
-    success: true,
-    message: "successfully registered",
-    user,
-  });
+  try {
+    const file = req.file;
+    const { username, email, password, confirmPassword } = req.body;
+    if (!username || !email || !password || !confirmPassword)
+      return next(new ErrorHandler(400, "please enter in valid field"));
+    let user = await User.findOne({ email });
+    if (user)
+      return next(
+        new ErrorHandler(400, `user already exist with email ${email}`)
+      );
+    if (password !== confirmPassword)
+      return next(
+        new ErrorHandler(400, `password and confirm password doesn't match`)
+      );
+    const uri = getDataUri(file);
+    const response = await cloudinary.uploader.upload(uri.content);
+    const image = {
+      url: response.url,
+      public_id: response.public_id,
+    };
+    user = await User.create({
+      username,
+      email,
+      password,
+      image,
+    });
+    res.status(201).json({
+      success: true,
+      message: "successfully registered",
+      user,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export const logout = catchAsyncError(async (req, res, next) => {

@@ -19,7 +19,6 @@ export const createChat = catchAsyncError(async (req, res, next) => {
     path: "latestMessage.sender",
     select: "-friends -password",
   });
-
   if (isChat.length > 0) {
     res.status(200).json({
       success: true,
@@ -36,7 +35,7 @@ export const createChat = catchAsyncError(async (req, res, next) => {
     );
     res.status(201).json({
       success: true,
-      fullChat,
+      isChat:fullChat,
     });
   }
 });

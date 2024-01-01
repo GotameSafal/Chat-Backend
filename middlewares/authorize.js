@@ -7,8 +7,7 @@ export const authorization = async (req, res, next) => {
     return next(
       new ErrorHandler(401, "you are not allowed to access this resource")
     );
-  cookie = cookie.replace("Bearer", "");
-
+  cookie = cookie.replace("Bearer", "").trim();
   const decryptData = jwt.verify(cookie, process.env.JWT_SECRET);
   const user = await User.findOne({ _id: decryptData.id }, "-friends");
   req.user = user;

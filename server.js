@@ -4,7 +4,9 @@ import { Server } from "socket.io";
 import { connectDb } from "./config/connectDb.js";
 import { v2 as cloudinary } from "cloudinary";
 import User from "./models/usermodel.js";
+
 connectDb();
+
 cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
@@ -12,11 +14,13 @@ cloudinary.config({
 });
 
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: "*",
   },
 });
+
 io.on("connection", async (socket) => {
   var userId;
   socket.on("set up", async (user) => {
@@ -45,14 +49,12 @@ io.on("connection", async (socket) => {
       }
     });
   });
-  socket.on("friend_request_accepted", async () => {
-    const user = await User.findById(userId, "friends").populate({
-      path: "friends",
-      select: "username image isOnline",
-      options: { limit: 15 * 1 },
-    });
-    socket.emit("refetch friends", user.friends);
+
+  socket.on("friend_request_accepted", async (id) => {
+    socket.to(id).emit("accepted_refetch_friends");
+    socket.emit("refetch friends");
   });
+
   socket.on("disconnect", async () => {
     await User.findByIdAndUpdate(userId, {
       $set: { isOnline: false },
@@ -60,6 +62,7 @@ io.on("connection", async (socket) => {
     socket.broadcast.emit("getUserOffline", userId);
   });
 });
+
 server.listen(8000, () => {
   console.log(`listening on port ${process.env.PORT}`);
 });
