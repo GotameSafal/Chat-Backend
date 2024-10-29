@@ -10,7 +10,7 @@ export const loginUser = catchAsyncError(async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password)
     return next(new ErrorHandler(400, "Please enter email, password"));
-  let user = await User.findOne({ email }).select("+password");
+  let user = await User.find({ email }).select("+password");
   if (!user) return next(new ErrorHandler(400, "Invalid credentials"));
   const result = await user.comparePassword(password);
   if (!result) return next(new ErrorHandler(400, "Invalid credentails"));
