@@ -28,7 +28,7 @@ export const registerUser = catchAsyncError(async (req, res, next) => {
     const { username, email, password, confirmPassword } = req.body;
     if (!username || !email || !password || !confirmPassword)
       return next(new ErrorHandler(400, "please enter in valid field"));
-    let user = await User.findOne({ email });
+    let user = await User.find({ email });
     if (user)
       return next(
         new ErrorHandler(400, `user already exist with email ${email}`)
